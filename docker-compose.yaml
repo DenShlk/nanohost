@@ -6,48 +6,48 @@ services:
       context: .
       target: builder
     container_name: fastapi-app
+    expose:
+      - "8000"
     environment:
-      PORT: 8000
-    ports:
-      - '8000:8000'
+      - VIRTUAL_HOST=localhost
+      - LETSENCRYPT_HOST=localhost
+      - LETSENCRYPT_EMAIL=goo.denshlk@gmail.com
+      - VIRTUAL_PORT=8000
+    depends_on:
+      nginx-proxy:
+        condition: service_started
+      letsencrypt-companion:
+        condition: service_started
 
   nginx-proxy:
-    image: jwilder/nginx-proxy:alpine
+    image: nginxproxy/nginx-proxy
     container_name: nginx-proxy
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
       - certs:/etc/nginx/certs
-      - vhostd:/etc/nginx/vhost.d
+      - vhost:/etc/nginx/vhost.d
       - html:/usr/share/nginx/html
-      - acme:/etc/acme.sh
-    environment:
-      - DEFAULT_HOST=realnice.page
-      - VIRTUAL_PORT=8000
-      - VIRTUAL_HOST=realnice.page
+      - /var/run/docker.sock:/tmp/docker.sock:ro
 
   letsencrypt-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt-companion
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
     restart: always
     volumes:
       - certs:/etc/nginx/certs
-      - vhostd:/etc/nginx/vhost.d
+      - vhost:/etc/nginx/vhost.d
       - html:/usr/share/nginx/html
-      - acme:/etc/acme.sh
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
     environment:
+      - DEFAULT_EMAIL=goo.denshlk@gmail.com
       - NGINX_PROXY_CONTAINER=nginx-proxy
-      - DEFAULT_EMAIL
 
 volumes:
-  .:
-  postgres_data:
-  static:
   certs:
   html:
-  vhostd:
+  vhost:
   acme:
