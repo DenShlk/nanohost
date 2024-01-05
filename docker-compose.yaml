@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    build:
+      context: .
+      target: builder
+    container_name: fastapi-app
+    environment:
+      PORT: 8000
+    ports:
+      - '8000:8000'
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy:alpine
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+    environment:
+      - DEFAULT_HOST=realnice.page
+      - VIRTUAL_PORT=8000
+      - VIRTUAL_HOST=realnice.page
+
+  letsencrypt-companion:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt-companion
+    restart: always
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhostd:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL
+
+volumes:
+  .:
+  postgres_data:
+  static:
+  certs:
+  html:
+  vhostd:
+  acme:
