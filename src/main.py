@@ -36,7 +36,7 @@ async def upload(request: Request, duration: str | None = None, uses: int | None
         else:
             duration = None
     uid = storage.store(content, duration=duration, uses=uses)
-    return {'id': uid, 'url': f'http://localhost:8000/id/{uid}'}
+    return {'id': uid, 'url': f'https://realnice.page/id/{uid}'}
 
 
 @app.get("/id/{uid}")
