@@ -13,6 +13,9 @@ services:
       - LETSENCRYPT_HOST=realnice.page
       - LETSENCRYPT_EMAIL=goo.denshlk@gmail.com
       - VIRTUAL_PORT=8000
+    depends_on:
+      postgres:
+        condition: service_started
 
   postgres:
     image: postgres:latest
