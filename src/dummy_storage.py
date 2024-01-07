@@ -2,7 +2,7 @@ import sys
 import uuid
 
 
-class Storage:
+class DummyStorage:
     data: dict[int, str] = {}
     size: int
 

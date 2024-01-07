@@ -8,7 +8,10 @@ WORKDIR /app
 COPY /src /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN \
+ apt update && \
+ apt install -y libpq-dev gcc && \
+ python3 -m pip install -r requirements.txt --no-cache-dir
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000

@@ -1,22 +1,48 @@
-from fastapi import FastAPI, Request
+import random
+import sched
+import time
+from contextlib import asynccontextmanager
+from datetime import datetime, timedelta
+from threading import Thread
+
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
+from sqlalchemy import create_engine
+import pytimeparse
 
-from storage import Storage
+from db_storage import DbStorage
 
-app = FastAPI()
-storage = Storage()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    storage.shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
+
+db_engine = create_engine('postgresql+psycopg2://postgres:example@localhost:5433/postgres', echo=True)
+storage = DbStorage(db_engine)
+
+print('lol')
 
 
 @app.post("/upload")
-async def upload(request: Request):
+async def upload(request: Request, duration: str | None = None, uses: int | None = None):
     content = await request.body()
-    uid = storage.store(content)
-    return {'id': uid, 'url': f'http://127.0.0.1:8000/page/{uid}'}
+    if duration is not None:
+        if duration:
+            duration = timedelta(seconds=pytimeparse.parse(duration))
+        else:
+            duration = None
+    uid = storage.store(content, duration=duration, uses=uses)
+    return {'id': uid, 'url': f'http://localhost:8000/id/{uid}'}
 
 
-@app.get("/page/{uid}", response_class=HTMLResponse)
-async def resource(uid: int):
-    return storage.get(uid)
+@app.get("/id/{uid}")
+async def resource(uid: str):
+    res = storage.get(uid)
+    return HTTPException(status_code=404, detail="Not found.") if res is None else HTMLResponse(res)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -33,3 +59,8 @@ async def root():
         </body>
     </html>
     """
+
+
+@app.get("/healthcheck", response_class=HTMLResponse)
+async def healthcheck() -> str:
+    return random.choice(['hear you loud and clear', '5/5', 'we hear you'])
