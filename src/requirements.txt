@@ -1,5 +1,4 @@
 fastapi
-fastapi_utils
 uvicorn
 psycopg2
 SQLAlchemy
