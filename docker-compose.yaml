@@ -16,10 +16,9 @@ services:
 
   postgres:
     image: postgres:latest
+    container_name: postgres
     environment:
       POSTGRES_PASSWORD: example
-    ports:
-      - '5433:5432'
     volumes:
       - ./src/db/init.sql:/docker-entrypoint-initdb.d/my_init.sql
 

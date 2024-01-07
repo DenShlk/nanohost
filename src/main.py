@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-db_engine = create_engine('postgresql+psycopg2://postgres:example@localhost:5433/postgres', echo=True)
+db_engine = create_engine('postgresql+psycopg2://postgres:example@postgres:5432/postgres', echo=True)
 storage = DbStorage(db_engine)
 
 print('lol')
