@@ -26,7 +26,7 @@ jobs:
               git checkout master &&
               git fetch --all &&
               git reset --hard origin/master &&
-              git pull origin dev &&
+              git pull origin master &&
               
               sudo docker compose down
               sudo docker build --no-cache .
