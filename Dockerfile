@@ -8,10 +8,12 @@ WORKDIR /app
 COPY /src /app
 
 # Install any needed packages specified in requirements.txt
+# uninstall fastapi-utils because it doesn't support sqlalchemy 2
 RUN \
- apt update && \
- apt install -y libpq-dev gcc && \
- python3 -m pip install -r requirements.txt --no-cache-dir
+  apt update && \
+  apt install -y libpq-dev gcc && \
+  python3 -m pip uninstall -y fastapi-utils && \
+  python3 -m pip install -r requirements.txt --no-cache-dir
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
