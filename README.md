@@ -1,8 +1,9 @@
 # Nanohost
 
 This thing helps you share working html pages by storing them in db and serving to you when needed.
+Api is accessible at https:/realnice.page/
 
-There are only 2 endpoints:
+There are 2 main endpoints:
 - /upload - uploads post body to db
 - /id/<id> gets stored content
 - details are here: https://realnice.page/docs#/
