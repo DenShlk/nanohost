@@ -11,17 +11,32 @@ from pydantic import BaseModel
 from pydantic_core import Url
 from sqlalchemy import create_engine
 import pytimeparse
+from starlette.responses import RedirectResponse
 
 from db_storage import DbStorage
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     yield
     storage.shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="Nanohost",
+    summary="App that lets you temporary store html pages as simple as possible. 🚀",
+    version="0.0.1",
+    contact={
+        "name": "Denis Shulakov",
+        "url": "https://github.com/denshlk/",
+        "email": "goo.denshlk@gmail.com",
+    },
+    # license_info={
+    #     "name": "Apache 2.0",
+    #     "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+    # },
+    lifespan=lifespan
+)
 
 db_engine = create_engine('postgresql+psycopg2://postgres:example@postgres:5432/postgres', echo=True)
 storage = DbStorage(db_engine)
@@ -38,7 +53,6 @@ async def upload(request: Request, duration: str | None = None, uses: int | None
     Uploads content to storage with optional expiration duration and usage limit.
 
     Parameters:
-    - request (Request): The FastAPI request object.
     - duration (str | None): Optional. A string representing the expiration duration.
     Format is 1d, 1h, 1h 30m 15s and so on. (check https://github.com/wroberts/pytimeparse)
     If None, default (1d) expiration is set.
@@ -73,8 +87,8 @@ async def resource(uid: str):
     return HTTPException(status_code=404, detail="Not found.") if res is None else HTMLResponse(res)
 
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
+@app.get("/stats", response_class=HTMLResponse)
+async def stats():
     """
     Returns an HTML page displaying information about the objects in storage and memory usage.
 
@@ -104,3 +118,8 @@ async def healthcheck() -> str:
     - str: A random health status message if app is online, otherwise ???.
     """
     return random.choice(['hear you loud and clear', '5/5', 'we hear you'])
+
+
+@app.get("/")
+async def index() -> RedirectResponse:
+    return RedirectResponse("/docs", status_code=303)
